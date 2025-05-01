@@ -23,7 +23,7 @@ class AuthRepository {
     async fetchProfile(): Promise<StaffProfile> {
         const response = await BeautyClient.get<StaffProfile>('/staff');
         localStorage.setItem('profile', JSON.stringify(response.data));
-        return response.data;
+        return StaffProfile.fromJson(response.data);
     }
 
     async getAuth() {
