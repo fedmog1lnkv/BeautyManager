@@ -38,7 +38,7 @@ const handleFileChange = (event: Event) => {
         <template v-else>
             <div class="font-semibold text-xl mb-4">{{ props.title }}</div>
 
-            <div class="relative group w-full h-96 rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100 dark:bg-gray-800 flex items-center justify-center" @click="triggerFileSelect">
+            <div class="relative group w-full rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100 dark:bg-gray-800 flex items-center justify-center" @click="triggerFileSelect">
                 <template v-if="props.imageUrl">
                     <img :src="props.imageUrl" :alt="props.title" class="w-full h-full object-cover rounded-xl transition duration-300 group-hover:brightness-75" />
                     <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">

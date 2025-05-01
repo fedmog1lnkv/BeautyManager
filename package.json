@@ -16,7 +16,7 @@
         "primevue": "^4.3.1",
         "rxjs": "^7.8.2",
         "tailwindcss-primeui": "^0.5.0",
-        "ts-jackson": "^1.7.0",
+        "ts-serializable": "^4.2.0",
         "vue": "^3.4.34",
         "vue-router": "^4.4.0",
         "vue-the-mask": "^0.11.1"

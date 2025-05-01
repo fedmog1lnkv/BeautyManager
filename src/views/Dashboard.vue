@@ -24,7 +24,8 @@ const ratingToShow = computed(() => {
 const colorUppercase = computed({
     get: () => {
         const color = organization.value?.theme.color || '';
-        return color.startsWith('#') ? color.toUpperCase() : `#${color.toUpperCase()}`;
+        organization.value.theme.color = color.startsWith('#') ? color.toUpperCase() : `#${color.toUpperCase()}`;
+        return organization.value.theme.color;
     },
     set: (val: string) => {
         if (organization.value) {
@@ -67,9 +68,8 @@ const saveOrganization = async () => {
     isLoading.value = true;
     try {
         if (organization.value) {
-            console.log('Сохраняем:', JSON.stringify(organization.value, null, 2));
             await OrganizationRepository.saveOrganization(organization.value);
-            originalOrganization.value = JSON.parse(JSON.stringify(organization.value)); // обновить оригинал
+            originalOrganization.value = JSON.parse(JSON.stringify(organization.value));
             hasChanges.value = false;
             await loadOrganization();
         }
@@ -80,10 +80,8 @@ const saveOrganization = async () => {
     }
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const loadOrganization = async () => {
     isLoading.value = true;
-    await sleep(500);
     organization.value = await OrganizationRepository.getOrganization();
     originalOrganization.value = JSON.parse(JSON.stringify(organization.value));
     stats.value = await OrganizationRepository.getStats();
