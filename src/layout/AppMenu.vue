@@ -14,6 +14,12 @@ const model = ref([
             { label: 'Список', icon: 'pi pi-fw pi-list', to: '/venues' },
         ]
     },
+    {
+        label: 'Сотрудники',
+        items: [
+            { label: 'Список', icon: 'pi pi-fw pi-list', to: '/staffs' },
+        ]
+    },
     // {
     //     label: 'Pages',
     //     icon: 'pi pi-fw pi-briefcase',

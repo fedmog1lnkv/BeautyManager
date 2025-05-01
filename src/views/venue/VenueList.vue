@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import VenueDialog from '@/components/venue/VenueInfoWidget.vue';
 import VenueRepository from '@/data/repositories/VenueRepository';
 import router from '@/router/index';
 
 const options = ref(['grid', 'list']);
 const layout = ref('grid');
 
-const displayDialog = ref(false);
-const selectedVenueId = ref(null);
-
-const breadcrumbHome = ref({ icon: 'pi pi-home', to: '/' });
-const breadcrumbItems = ref([{ label: 'Салоны', to: '/venues' }]);
+const breadcrumbHome = ref({ icon: 'pi pi-home', command: () => router.push('/') });
+const breadcrumbItems = ref([{ label: 'Салоны' }]);
 
 const venues = ref([]);
 const isLoading = ref(true);
@@ -54,11 +50,7 @@ onMounted(loadVenues);
                     <div class="grid grid-cols-12 gap-4">
                         <div v-for="(item, index) in slotProps.items" :key="index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
                             <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
-                                <div class="bg-surface-50 flex justify-center rounded p-2">
-                                    <div class="relative mx-auto">
-                                        <img class="rounded w-full" :src="item.theme.photo" :alt="item.name.value" style="max-width: 300px; max-height: 150px" />
-                                    </div>
-                                </div>
+                                <img class="rounded w-full object-cover" :src="item.theme.photo" :alt="item.name.value" style="width: 100%; height: 150px" />
                                 <div class="pt-6">
                                     <div class="flex justify-between items-center">
                                         <div class="text-lg font-medium mt-1">{{ item.name.value }}</div>
@@ -129,7 +121,5 @@ onMounted(loadVenues);
                 </template>
             </DataView>
         </div>
-
-        <VenueDialog v-model:visible="displayDialog" :venueId="selectedVenueId" @updateVenue="updateVenue" />
     </div>
 </template>

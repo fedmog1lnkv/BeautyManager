@@ -9,9 +9,9 @@ export default class Venue {
     address: string;
     rating?: number;
     location?: VenueLocation;
-    photos: str[];
+    photos: string[];
 
-    constructor(id?: string, name?: string, description?: string, theme?: VenueTheme, address?: string, rating?: number, location?: VenueLocation, photos?: str[]) {
+    constructor(id?: string, name?: string, description?: string, theme?: VenueTheme, address?: string, rating?: number, location?: VenueLocation, photos?: string[]) {
         this.id = id;
         this.name = name;
         this.description = description;
