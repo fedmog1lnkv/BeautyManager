@@ -1,6 +1,7 @@
 enum StaffRole {
     Manager = "Manager",
-    Master = "Master"
+    Master = "Master",
+    Unknown = "Unknown"
 }
 
 export default StaffRole;

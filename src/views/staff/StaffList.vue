@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { FilterMatchMode } from '@primevue/core/api';
+import InputMask from 'primevue/inputmask';
+import router from '@/router/index';
 
 const breadcrumbHome = ref({ icon: 'pi pi-home', to: '/' });
 const breadcrumbItems = ref([{ label: 'Сотрудники', to: '/staffs' }]);
@@ -13,53 +15,11 @@ const loadStaffs = async () => {
     staffs.value = [
         {
             id: 1,
-            agent: {
-                name: 'Иван Иванов',
-                image: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'
-            },
-            number: '79999999999',
+            name: 'Иван Иванов',
+            photo: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+            phoneNumber: '79999999999',
             role: 'Master',
             rating: 3
-        },
-        {
-            id: 2,
-            agent: {
-                name: 'Мария Петрова',
-                image: 'https://primefaces.org/cdn/primevue/images/avatar/annafali.png'
-            },
-            number: '79999999999',
-            role: 'Unknown',
-            rating: 0
-        },
-        {
-            id: 3,
-            agent: {
-                name: 'Алексей Смирнов',
-                image: 'https://primefaces.org/cdn/primevue/images/avatar/annafali.png'
-            },
-            number: '79999999999',
-            role: 'Master',
-            rating: 8
-        },
-        {
-            id: 4,
-            agent: {
-                name: 'Ольга Кузнецова',
-                image: 'https://primefaces.org/cdn/primevue/images/avatar/annafali.png'
-            },
-            number: '79999999999',
-            role: 'Unknown',
-            rating: 0
-        },
-        {
-            id: 5,
-            agent: {
-                name: 'Дмитрий Васильев',
-                image: 'https://primefaces.org/cdn/primevue/images/avatar/annafali.png'
-            },
-            number: '79999999999',
-            role: 'Manager',
-            rating: 6
         }
     ];
     isLoading.value = false;
@@ -96,7 +56,24 @@ const filters = ref({
 });
 
 const selectRow = (data) => {
-    console.log(data.agent.name);
+    const id = data.id;
+    router.push({ name: 'staffDetail', params: { id } });
+};
+
+const isDialogVisible = ref(false);
+const currentStep = ref(1);
+
+const addStaff = () => {
+    currentStep.value = 1;
+    isDialogVisible.value = true;
+};
+
+const nextStep = () => {
+    if (currentStep.value < 3) currentStep.value++;
+};
+
+const prevStep = () => {
+    if (currentStep.value > 1) currentStep.value--;
 };
 
 onMounted(loadStaffs);
@@ -112,13 +89,14 @@ onMounted(loadStaffs);
 
             <DataTable :value="staffs" dataKey="id" :filters="filters" filterDisplay="menu" :globalFilterFields="['agent.name', 'number', 'role']" :loading="isLoading">
                 <template #header>
-                    <div class="flex justify-end">
+                    <div class="flex justify-between items-center">
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
                             <InputText v-model="filters.global.value" placeholder="Поиск" />
                         </IconField>
+                        <Button icon="pi pi-plus" @click="addStaff" severity="success" rounded />
                     </div>
                 </template>
 
@@ -128,15 +106,15 @@ onMounted(loadStaffs);
                 <Column field="agent.name" header="Сотрудник" style="min-width: 14rem">
                     <template #body="{ data }">
                         <div class="flex items-center gap-2">
-                            <img :alt="data.agent.name" :src="data.agent.image" style="width: 32px" />
-                            <span>{{ data.agent.name }}</span>
+                            <img :alt="data.name" :src="data.photo" style="width: 32px" />
+                            <span>{{ data.name }}</span>
                         </div>
                     </template>
                 </Column>
 
                 <Column field="number" header="Номер" style="min-width: 10rem">
                     <template #body="{ data }">
-                        {{ data.number }}
+                        {{ data.phoneNumber }}
                     </template>
                 </Column>
 
@@ -160,4 +138,35 @@ onMounted(loadStaffs);
             </DataTable>
         </div>
     </div>
+    <Dialog v-model:visible="isDialogVisible" modal header="Добавление сотрудника" :style="{ width: '30rem' }">
+        <div class="flex flex-col gap-3">
+            <Stepper :value="String(currentStep)">
+                <StepList>
+                    <Step value="1">Телефон</Step>
+                    <Step value="2">Код</Step>
+                    <Step value="3">Готово</Step>
+                </StepList>
+            </Stepper>
+
+            <div v-if="currentStep === 1">
+                <label class="block mb-2">Введите номер телефона:</label>
+                <InputMask v-model="phoneNumber" mask="+7 (999) 999-99-99" placeholder="+7 (999) 999-99-99" class="w-full md:w-[30rem] mb-8 p-3 border border-gray-300 rounded" required fluid />
+            </div>
+
+            <div v-else-if="currentStep === 2">
+                <label class="block mb-2">Введите код подтверждения:</label>
+                <InputMask v-model="code" id="code" type="text" mask="999-999" placeholder="999-999" class="w-full md:w-[30rem] mb-8 p-3 border border-gray-300 rounded" pattern="^[0-9]{6}$" required fluid />
+            </div>
+
+            <div v-else-if="currentStep === 3">
+                <p class="text-green-600 font-semibold">Сотрудник успешно добавлен!</p>
+            </div>
+        </div>
+
+        <template #footer>
+            <Button label="Назад" icon="pi pi-angle-left" @click="prevStep" text :disabled="currentStep === 1" />
+            <Button v-if="currentStep < 3" label="Далее" icon="pi pi-angle-right" iconPos="right" @click="nextStep" />
+            <Button v-else label="Готово" icon="pi pi-check" @click="isDialogVisible = false" />
+        </template>
+    </Dialog>
 </template>
