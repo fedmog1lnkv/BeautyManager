@@ -22,6 +22,10 @@ const goToVenueDetail = (id: string) => {
     router.push({ name: 'venueDetail', params: { id } });
 };
 
+const goToVenueCreate = () => {
+    router.push({ name: 'venueCreate' });
+};
+
 onMounted(loadVenues);
 </script>
 
@@ -32,7 +36,10 @@ onMounted(loadVenues);
 
     <div class="flex flex-col">
         <div class="card">
-            <div class="font-semibold text-xl">Список салонов</div>
+            <div class="flex justify-between items-center pe-4">
+                <div class="font-semibold text-xl">Список салонов</div>
+                <Button icon="pi pi-plus" @click="goToVenueCreate" severity="success" rounded />
+            </div>
 
             <div v-if="isLoading">Loading...</div>
 

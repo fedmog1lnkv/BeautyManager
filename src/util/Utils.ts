@@ -10,3 +10,7 @@ export const fileToBase64 = (file: File): Promise<string | ArrayBuffer> => {
         reader.onerror = (error) => reject(error);
     });
 };
+
+export function isEmpty(value: string) {
+    return !value || value.trim().length === 0;
+}

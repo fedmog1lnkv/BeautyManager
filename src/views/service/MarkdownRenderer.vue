@@ -1,0 +1,22 @@
+<template>
+    <div v-html="markdown.render(source)" />
+</template>
+
+<script setup lang="ts">
+import MarkdownIt from 'markdown-it';
+import MarkdownItAbbr from 'markdown-it-abbr';
+import MarkdownItAnchor from 'markdown-it-anchor';
+import MarkdownItFootnote from 'markdown-it-footnote';
+import MarkdownItSub from 'markdown-it-sub';
+import MarkdownItSup from 'markdown-it-sup';
+import MarkdownItTOC from 'markdown-it-toc-done-right';
+
+const markdown = new MarkdownIt().use(MarkdownItAbbr).use(MarkdownItAnchor).use(MarkdownItFootnote).use(MarkdownItSub).use(MarkdownItSup).use(MarkdownItTOC);
+
+defineProps({
+    source: {
+        type: String,
+        default: ''
+    }
+});
+</script>

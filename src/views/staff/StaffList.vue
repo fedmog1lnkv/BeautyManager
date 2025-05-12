@@ -20,8 +20,41 @@ const loadStaffs = async () => {
             phoneNumber: '79999999999',
             role: 'Master',
             rating: 3
+        },
+        {
+            id: 2,
+            name: 'Ольга Смирнова',
+            photo: 'https://primefaces.org/cdn/primevue/images/avatar/asiyajavayant.png',
+            phoneNumber: '79888888888',
+            role: 'Unknown',
+            rating: 0
+        },
+        {
+            id: 3,
+            name: 'Дмитрий Кузнецов',
+            photo: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
+            phoneNumber: '79777777777',
+            role: 'Master',
+            rating: 4
+        },
+        {
+            id: 4,
+            name: 'Екатерина Соколова',
+            photo: 'https://primefaces.org/cdn/primevue/images/avatar/ionibowcher.png',
+            phoneNumber: '79666666666',
+            role: 'Manager',
+            rating: 9
+        },
+        {
+            id: 5,
+            name: 'Алексей Морозов',
+            photo: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+            phoneNumber: '79555555555',
+            role: 'Master',
+            rating: 7
         }
     ];
+
     isLoading.value = false;
 };
 
@@ -143,8 +176,7 @@ onMounted(loadStaffs);
             <Stepper :value="String(currentStep)">
                 <StepList>
                     <Step value="1">Телефон</Step>
-                    <Step value="2">Код</Step>
-                    <Step value="3">Готово</Step>
+                    <Step value="2">Готово</Step>
                 </StepList>
             </Stepper>
 

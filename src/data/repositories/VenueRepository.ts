@@ -19,7 +19,23 @@ class VenueRepository {
             description: venue.description,
             color: venue.theme.color,
             address: venue.address,
-            location: venue.location
+            latitude: venue.location.latitude,
+            longitude: venue.location.longitude
+        });
+    }
+
+    async createVenue(venue: Venue): Promise<void> {
+        let description = venue.description.trim();
+        if (description.length === 0) {
+            description = null;
+        }
+        await BeautyClient.post('/venue', {
+            name: venue.name,
+            description: description,
+            color: venue.theme.color,
+            address: venue.address,
+            latitude: venue.location.latitude,
+            longitude: venue.location.longitude
         });
     }
 

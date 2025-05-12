@@ -139,7 +139,7 @@ function searchCountry(event) {
                         <RadioButton id="option1" name="option" value="Chicago" v-model="radioValue" />
                         <label for="option1" class="leading-none ml-2">Chicago</label>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center">я
                         <RadioButton id="option2" name="option" value="Los Angeles" v-model="radioValue" />
                         <label for="option2" class="leading-none ml-2">Los Angeles</label>
                     </div>

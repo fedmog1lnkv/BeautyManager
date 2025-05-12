@@ -8,6 +8,9 @@ import { fileToBase64 } from '@/util/Utils';
 import AddPhotoButton from '@/components/venue/AddPhotoButton.vue';
 import { useDebounceFn } from '@vueuse/core';
 import router from '@/router/index';
+import 'leaflet/dist/leaflet.css';
+import { LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet';
+import VenueLocation from '@/data/models/VenueLocation';
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -30,6 +33,11 @@ const normalize = (obj: any): any => {
     }
     return obj === null || obj === undefined ? '' : obj;
 };
+
+const mapLatLng = computed(() => {
+    if (!venue.value) return [0, 0];
+    return [venue.value.location.latitude, venue.value.location.longitude];
+});
 
 watch(
     venue,
@@ -166,6 +174,11 @@ const movePhotoDown = async (index: number) => {
     await updatePhotoOrder();
 };
 
+const onMapClicked = (data) => {
+    if (!venue.value) return;
+    venue.value.location = new VenueLocation(data.latlng.lat, data.latlng.lng);
+}
+
 onMounted(loadVenue);
 </script>
 
@@ -215,6 +228,13 @@ onMounted(loadVenue);
                     <Button label="Сохранить" :disabled="!hasChanges" @click="saveVenue" class="w-full" />
                 </div>
             </div>
+        </div>
+
+        <div class="grid card mt-6">
+            <l-map :use-global-leaflet="false" :zoom="16" :center="mapLatLng" style="height: 400px; width: 100%" ref="mapRef" @click="onMapClicked">
+                <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <l-marker :lat-lng="mapLatLng" />
+            </l-map>
         </div>
 
         <Skeleton v-if="isLoading" width="50%" height="1.5rem" />

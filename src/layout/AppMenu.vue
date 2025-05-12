@@ -10,16 +10,16 @@ const model = ref([
     },
     {
         label: 'Салоны',
-        items: [
-            { label: 'Список', icon: 'pi pi-fw pi-list', to: '/venues' },
-        ]
+        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/venues' }]
     },
     {
         label: 'Сотрудники',
-        items: [
-            { label: 'Список', icon: 'pi pi-fw pi-list', to: '/staffs' },
-        ]
+        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/staffs' }]
     },
+    {
+        label: 'Услуги',
+        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/services' }]
+    }
     // {
     //     label: 'Pages',
     //     icon: 'pi pi-fw pi-briefcase',

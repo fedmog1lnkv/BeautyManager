@@ -6,7 +6,8 @@ import { Skeleton } from 'primevue';
 const props = defineProps({
     title: String,
     isLoading: Boolean,
-    imageUrl: String
+    imageUrl: String,
+    disabled: Boolean
 });
 
 const emit = defineEmits<{
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const triggerFileSelect = () => {
+    if (props.disabled) return;
     fileInput.value?.click();
 };
 
@@ -29,7 +31,7 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card flex flex-col">
         <div v-if="props.isLoading" class="relative group w-full rounded-xl overflow-hidden">
             <Skeleton width="50%" height="2rem" class="mb-4" />
             <Skeleton width="100%" height="350px" />
@@ -38,11 +40,12 @@ const handleFileChange = (event: Event) => {
         <template v-else>
             <div class="font-semibold text-xl mb-4">{{ props.title }}</div>
 
-            <div class="relative group w-full rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100 dark:bg-gray-800 flex items-center justify-center" @click="triggerFileSelect">
+            <div class="relative group w-full rounded-xl overflow-hidden shadow-lg cursor-pointer bg-gray-100 dark:bg-gray-800 flex items-center justify-center w-full h-full" @click="triggerFileSelect">
                 <template v-if="props.imageUrl">
                     <img :src="props.imageUrl" :alt="props.title" class="w-full h-full object-cover rounded-xl transition duration-300 group-hover:brightness-75" />
                     <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                        <i class="pi pi-pencil text-white text-4xl"></i>
+                        <i v-if="!disabled" class="pi pi-pencil text-white text-4xl"></i>
+                        <i v-else class="pi pi-lock text-white text-4xl"></i>
                     </div>
                 </template>
 
