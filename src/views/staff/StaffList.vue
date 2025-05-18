@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { FilterMatchMode } from '@primevue/core/api';
 import InputMask from 'primevue/inputmask';
 import router from '@/router/index';
+import StaffRepository from '@/data/repositories/StaffRepository';
+import { DataTablePageEvent } from 'primevue/datatable';
+import { useDebounceFn } from '@vueuse/core';
+import OrganizationRepository from '@/data/repositories/OrganizationRepository';
 
 const breadcrumbHome = ref({ icon: 'pi pi-home', to: '/' });
 const breadcrumbItems = ref([{ label: 'Сотрудники', to: '/staffs' }]);
@@ -10,52 +13,24 @@ const breadcrumbItems = ref([{ label: 'Сотрудники', to: '/staffs' }]);
 const staffs = ref([]);
 const isLoading = ref(true);
 
+const pageSize = 5;
+
+const totalStaffs = ref(0);
+
+const searchText = ref('');
+
+const currentPage = ref(0);
+
 const loadStaffs = async () => {
     isLoading.value = true;
-    staffs.value = [
-        {
-            id: 1,
-            name: 'Иван Иванов',
-            photo: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-            phoneNumber: '79999999999',
-            role: 'Master',
-            rating: 3
-        },
-        {
-            id: 2,
-            name: 'Ольга Смирнова',
-            photo: 'https://primefaces.org/cdn/primevue/images/avatar/asiyajavayant.png',
-            phoneNumber: '79888888888',
-            role: 'Unknown',
-            rating: 0
-        },
-        {
-            id: 3,
-            name: 'Дмитрий Кузнецов',
-            photo: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-            phoneNumber: '79777777777',
-            role: 'Master',
-            rating: 4
-        },
-        {
-            id: 4,
-            name: 'Екатерина Соколова',
-            photo: 'https://primefaces.org/cdn/primevue/images/avatar/ionibowcher.png',
-            phoneNumber: '79666666666',
-            role: 'Manager',
-            rating: 9
-        },
-        {
-            id: 5,
-            name: 'Алексей Морозов',
-            photo: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-            phoneNumber: '79555555555',
-            role: 'Master',
-            rating: 7
-        }
-    ];
-
-    isLoading.value = false;
+    try {
+        const paging = await StaffRepository.getStaff(0, pageSize, searchText.value);
+        staffs.value = paging.data;
+        totalStaffs.value = paging.totalCount;
+    } catch (e) {
+    } finally {
+        isLoading.value = false;
+    }
 };
 
 function getColor(status) {
@@ -84,29 +59,85 @@ function getRoleString(status) {
     }
 }
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-
 const selectRow = (data) => {
-    const id = data.id;
-    router.push({ name: 'staffDetail', params: { id } });
+    router.push({ name: 'staffDetail', params: { id: data.id } });
+};
+
+const loadPage = async (page: number) => {
+    isLoading.value = true;
+    try {
+        const paging = await StaffRepository.getStaff(page, pageSize, searchText.value);
+        staffs.value = paging.data;
+        totalStaffs.value = paging.totalCount;
+    } catch (e) {
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const pageSelected = async (params: DataTablePageEvent) => {
+    await loadPage(params.page);
+};
+
+const applySearch = useDebounceFn(async () => {
+    currentPage.value = 0;
+    await loadPage(0);
+}, 500);
+
+const searchChanged = async (value: string) => {
+    await applySearch();
 };
 
 const isDialogVisible = ref(false);
 const currentStep = ref(1);
 
-const addStaff = () => {
-    currentStep.value = 1;
-    isDialogVisible.value = true;
+const newStaffPhoneNumber = ref('');
+const code = ref('');
+
+const isPhoneValid = () => {
+    const cleaned = newStaffPhoneNumber.value.replace(/\D/g, '');
+    return cleaned.length === 11;
 };
 
-const nextStep = () => {
-    if (currentStep.value < 3) currentStep.value++;
+const isCodeValid = () => {
+    const cleaned = code.value.replace('-', '');
+    return /^[0-9]{6}$/.test(cleaned);
+};
+
+function openStaffCreationDialog() {
+    currentStep.value = 1;
+    isDialogVisible.value = true;
+}
+
+const nextStep = async () => {
+    if (currentStep.value === 1) {
+        try {
+            const organizationId = (await OrganizationRepository.getCachedOrFetch()).id;
+            await StaffRepository.sendPhoneChallenge(newStaffPhoneNumber.value.replace(/\D/g, ''), organizationId);
+            currentStep.value++;
+        } catch (e) {
+            console.error('Ошибка отправки номера:', e);
+        }
+    } else if (currentStep.value === 2) {
+        try {
+            await StaffRepository.verifyPhoneCode(newStaffPhoneNumber.value.replace(/\D/g, ''), code.value.replace('-', ''));
+            currentStep.value++;
+            await loadStaffs(); // обновить список после успешной регистрации
+        } catch (e) {
+            console.error('Ошибка подтверждения кода:', e);
+        }
+    }
 };
 
 const prevStep = () => {
     if (currentStep.value > 1) currentStep.value--;
+};
+
+const resetDialog = () => {
+    newStaffPhoneNumber.value = '';
+    code.value = '';
+    currentStep.value = 1;
+    isDialogVisible.value = false;
 };
 
 onMounted(loadStaffs);
@@ -120,16 +151,16 @@ onMounted(loadStaffs);
         <div class="card">
             <div class="font-semibold text-xl mb-4">Сотрудники</div>
 
-            <DataTable :value="staffs" dataKey="id" :filters="filters" filterDisplay="menu" :globalFilterFields="['agent.name', 'number', 'role']" :loading="isLoading">
+            <DataTable paginator v-model:first="currentPage" @page="pageSelected" :total-records="totalStaffs" :rows="pageSize" :lazy="true" :value="staffs" dataKey="name" :loading="isLoading">
                 <template #header>
                     <div class="flex justify-between items-center">
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters.global.value" placeholder="Поиск" />
+                            <InputText @update:modelValue="searchChanged" v-model="searchText" placeholder="Поиск" />
                         </IconField>
-                        <Button icon="pi pi-plus" @click="addStaff" severity="success" rounded />
+                        <Button icon="pi pi-plus" @click="openStaffCreationDialog" severity="success" rounded />
                     </div>
                 </template>
 
@@ -139,7 +170,10 @@ onMounted(loadStaffs);
                 <Column field="agent.name" header="Сотрудник" style="min-width: 14rem">
                     <template #body="{ data }">
                         <div class="flex items-center gap-2">
-                            <img :alt="data.name" :src="data.photo" style="width: 32px" />
+                            <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #eee; border-radius: 50%;">
+                                <img v-if="data.photo" :alt="data.name" :src="data.photo" style="width: 32px; height: 32px; border-radius: 50%;" />
+                                <i v-else class="pi pi-user" style="font-size: 20px; color: #888"></i>
+                            </div>
                             <span>{{ data.name }}</span>
                         </div>
                     </template>
@@ -182,7 +216,7 @@ onMounted(loadStaffs);
 
             <div v-if="currentStep === 1">
                 <label class="block mb-2">Введите номер телефона:</label>
-                <InputMask v-model="phoneNumber" mask="+7 (999) 999-99-99" placeholder="+7 (999) 999-99-99" class="w-full md:w-[30rem] mb-8 p-3 border border-gray-300 rounded" required fluid />
+                <InputMask v-model="newStaffPhoneNumber" mask="+7 (999) 999-99-99" placeholder="+7 (999) 999-99-99" class="w-full md:w-[30rem] mb-8 p-3 border border-gray-300 rounded" required fluid />
             </div>
 
             <div v-else-if="currentStep === 2">
@@ -197,8 +231,8 @@ onMounted(loadStaffs);
 
         <template #footer>
             <Button label="Назад" icon="pi pi-angle-left" @click="prevStep" text :disabled="currentStep === 1" />
-            <Button v-if="currentStep < 3" label="Далее" icon="pi pi-angle-right" iconPos="right" @click="nextStep" />
-            <Button v-else label="Готово" icon="pi pi-check" @click="isDialogVisible = false" />
+            <Button v-if="currentStep < 3" label="Далее" icon="pi pi-angle-right" iconPos="right" @click="nextStep" :disabled="(currentStep === 1 && !isPhoneValid()) || (currentStep === 2 && !isCodeValid())" />
+            <Button v-else label="Готово" icon="pi pi-check" @click="resetDialog" />
         </template>
     </Dialog>
 </template>

@@ -31,6 +31,13 @@ class ServiceRepository {
         });
     }
 
+    async saveServiceStaff(service: Service, staffIds: string[]) {
+        await BeautyClient.patch(`/service`, {
+            id: service.id,
+            staffIds: staffIds
+        });
+    }
+
     async getService(id: string): Promise<Service> {
         const response = await BeautyClient.get(`/service/${id}`);
         return Service.fromJSON(response.data);

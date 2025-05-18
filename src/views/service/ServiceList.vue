@@ -6,7 +6,6 @@ import { DataTablePageEvent } from 'primevue/datatable';
 import ServiceRepository from '@/data/repositories/ServiceRepository';
 import Service from '@/data/models/Service';
 import { useDebounceFn } from '@vueuse/core';
-import InputMask from 'primevue/inputmask';
 import OrganizationRepository from '@/data/repositories/OrganizationRepository';
 
 const breadcrumbHome = ref({ icon: 'pi pi-home', to: '/' });

@@ -6,19 +6,12 @@ import AppMenuItem from './AppMenuItem.vue';
 const model = ref([
     {
         label: 'Организация',
-        items: [{ label: 'Дашборд', icon: 'pi pi-fw pi-home', to: '/' }]
-    },
-    {
-        label: 'Салоны',
-        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/venues' }]
-    },
-    {
-        label: 'Сотрудники',
-        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/staffs' }]
-    },
-    {
-        label: 'Услуги',
-        items: [{ label: 'Список', icon: 'pi pi-fw pi-list', to: '/services' }]
+        items: [
+            { label: 'Дашборд', icon: 'pi pi-fw pi-home', to: '/' },
+            { label: 'Салоны', icon: 'pi pi-fw pi-th-large', to: '/venues' },
+            { label: 'Сотрудники', icon: 'pi pi-fw pi-users', to: '/staffs' },
+            { label: 'Услуги', icon: 'pi pi-fw pi-cart-arrow-down', to: '/services' }
+        ]
     }
     // {
     //     label: 'Pages',
