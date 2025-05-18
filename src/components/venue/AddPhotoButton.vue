@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { defineProps, defineEmits } from 'vue';
-import { Skeleton } from 'primevue';
+import { defineEmits, defineProps, ref } from 'vue';
 
 const props = defineProps({
     title: String,
@@ -29,8 +27,7 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-    <Button v-if="!isLoading" @click="triggerFileSelect" icon="pi pi-plus" :label="title" severity="secondary" outlined />
-    <Skeleton v-else width="100%" height="100%" />
+    <Button :disabled="isLoading" @click="triggerFileSelect" :icon="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-plus'" :label="isLoading ? 'Загрузка...' : title" severity="secondary" outlined />
     <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileChange" />
 </template>
 

@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+    beauty-manager:
+        build: .
+        ports:
+            - "8232:80"
+        restart: unless-stopped

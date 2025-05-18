@@ -10,8 +10,11 @@ import ToastService from 'primevue/toastservice';
 import '@/assets/styles.scss';
 import BeautyClient from '@/data/clients/BeautyClient';
 import { definePreset } from '@primeuix/themes';
+import VueDnDKitPlugin from '@vue-dnd-kit/core';
 
 const app = createApp(App);
+
+app.use(VueDnDKitPlugin);
 
 BeautyClient.interceptors.request.use(
     function (config) {

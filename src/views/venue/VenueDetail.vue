@@ -5,12 +5,14 @@ import VenueRepository from '@/data/repositories/VenueRepository';
 import Venue from '@/data/models/Venue';
 import MainPhotoWidget from '@/components/dashboard/MainPhotoWidget.vue';
 import { fileToBase64 } from '@/util/Utils';
-import AddPhotoButton from '@/components/venue/AddPhotoButton.vue';
 import { useDebounceFn } from '@vueuse/core';
 import router from '@/router/index';
 import 'leaflet/dist/leaflet.css';
 import { LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet';
 import VenueLocation from '@/data/models/VenueLocation';
+import Draggable from '@/components/Draggable.vue';
+import { DnDOperations, useDroppable } from '@vue-dnd-kit/core';
+import AddPhotoButton from "@/components/venue/AddPhotoButton.vue";
 
 const route = useRoute();
 const isLoading = ref(true);
@@ -158,26 +160,22 @@ const removePhotoFromList = async (index: number) => {
     }
 };
 
-const movePhotoUp = async (index: number) => {
-    if (!venue.value) return;
-    const photos = [...venue.value.photos];
-    [photos[index], photos[(index - 1) % photos.length]] = [photos[index - (1 % photos.length)], photos[index]];
-    venue.value.photos = photos;
-    await updatePhotoOrder();
-};
-
-const movePhotoDown = async (index: number) => {
-    if (!venue.value) return;
-    const photos = [...venue.value.photos];
-    [photos[index], photos[(index + 1) % photos.length]] = [photos[(index + 1) % photos.length], photos[index]];
-    venue.value.photos = photos;
-    await updatePhotoOrder();
-};
+const { elementRef, isOvered, isAllowed } = useDroppable({
+    data: computed(() => ({
+        source: venue.value?.photos || []
+    })),
+    events: {
+        onDrop: (store, payload) => {
+            DnDOperations.applyTransfer(store);
+            updatePhotoOrder();
+        }
+    }
+});
 
 const onMapClicked = (data) => {
     if (!venue.value) return;
     venue.value.location = new VenueLocation(data.latlng.lat, data.latlng.lng);
-}
+};
 
 onMounted(loadVenue);
 </script>
@@ -237,30 +235,37 @@ onMounted(loadVenue);
             </l-map>
         </div>
 
-        <Skeleton v-if="isLoading" width="50%" height="1.5rem" />
-        <div class="card mt-6" v-else>
+        <div class="card mt-6">
             <div class="font-semibold text-xl mb-4">Фотографии</div>
-            <Carousel :value="[...venue.photos, 'add-new-photo']" :numVisible="3" :numScroll="2">
-                <template #item="slotProps">
-                    <div class="border border-surface-200 dark:border-surface-700 rounded m-2 p-4">
-                        <div class="mb-4">
-                            <div class="relative mx-auto">
-                                <img v-if="slotProps.data !== 'add-new-photo'" :src="slotProps.data" :alt="`Фото ${slotProps.index}`" class="w-full h-64 object-cover rounded" />
-                                <div v-else class="w-full h-48 flex justify-center items-center bg-surface-200 dark:bg-surface-800 rounded">
-                                    <AddPhotoButton :isLoading="isAddingPhoto" @upload="addPhotoToList" title="Добавить фото" />
-                                </div>
+
+            <div class="flex justify-end mb-4">
+                <AddPhotoButton :isLoading="isAddingPhoto" @upload="addPhotoToList" title="Добавить фото" />
+            </div>
+
+            <div class="list" ref="elementRef">
+                <TransitionGroup name="list">
+                    <Draggable v-if="venue" v-for="(photo, index) in venue.photos" :key="photo" :source="venue.photos" :index="index">
+                        <div class="item relative group w-full h-64 rounded overflow-hidden shadow">
+                            <img :src="photo" class="w-full h-full object-cover rounded" />
+
+                            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <Button icon="pi pi-trash" severity="danger" outlined @click="removePhotoFromList(index)" />
                             </div>
                         </div>
-                        <div v-if="slotProps.data !== 'add-new-photo'" class="flex justify-center items-center space-x-2">
-                            <span>
-                                <Button :disabled="isDeletingPhoto || isAddingPhoto" @click="() => movePhotoUp(slotProps.index)" icon="pi pi-arrow-left" severity="secondary" outlined />
-                                <Button :disabled="isDeletingPhoto || isAddingPhoto" @click="() => removePhotoFromList(slotProps.index)" icon="pi pi-times" severity="danger" outlined />
-                                <Button :disabled="isDeletingPhoto || isAddingPhoto" @click="() => movePhotoDown(slotProps.index)" icon="pi pi-arrow-right" severity="secondary" outlined />
-                            </span>
-                        </div>
-                    </div>
-                </template>
-            </Carousel>
+                    </Draggable>
+                </TransitionGroup>
+            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+</style>
