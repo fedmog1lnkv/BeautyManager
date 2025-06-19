@@ -7,6 +7,7 @@ export default class StaffProfile {
     role: StaffRole;
     rating: number;
     photo: string;
+    services: string[];
 
     constructor(
         id?: string,
@@ -14,7 +15,8 @@ export default class StaffProfile {
         phoneNumber?: string,
         role?: StaffRole,
         rating?: number,
-        photo?: string
+        photo?: string,
+        services?: string[]
     ) {
         this.id = id || '';
         this.name = name || '';
@@ -22,6 +24,7 @@ export default class StaffProfile {
         this.role = role || StaffRole.Manager;
         this.rating = rating ?? 0;
         this.photo = photo || '';
+        this.services = services || [];
     }
 
     static fromJson(json: any): StaffProfile {
@@ -31,7 +34,8 @@ export default class StaffProfile {
             json.phoneNumber,
             json.role,
             json.rating,
-            json.photo
+            json.photo,
+            json.services || []
         );
     }
 }

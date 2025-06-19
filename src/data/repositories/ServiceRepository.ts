@@ -14,6 +14,13 @@ class ServiceRepository {
         return Paging.fromJson<Service>(response.data, Service.fromJSON);
     }
 
+    async getStaffServices(serviceIds: string[]): Promise<Service[]> {
+        if (!serviceIds || serviceIds.length === 0) return [];
+
+        const promises = serviceIds.map(id => this.getService(id));
+        return Promise.all(promises);
+    }
+
     async saveService(service: Service) {
         await BeautyClient.patch(`/service`, {
             id: service.id,

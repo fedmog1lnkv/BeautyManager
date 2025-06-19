@@ -10,7 +10,8 @@ const model = ref([
             { label: 'Дашборд', icon: 'pi pi-fw pi-home', to: '/' },
             { label: 'Салоны', icon: 'pi pi-fw pi-th-large', to: '/venues' },
             { label: 'Сотрудники', icon: 'pi pi-fw pi-users', to: '/staffs' },
-            { label: 'Услуги', icon: 'pi pi-fw pi-cart-arrow-down', to: '/services' }
+            { label: 'Услуги', icon: 'pi pi-fw pi-cart-arrow-down', to: '/services' },
+            { label: 'Купоны', icon: 'pi pi-fw pi-gift', to: '/coupons' }
         ]
     }
     // {

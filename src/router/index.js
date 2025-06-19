@@ -47,6 +47,16 @@ const router = createRouter({
                     path: '/services/:id',
                     name: 'serviceDetail',
                     component: () => import('@/views/service/ServiceDetail.vue')
+                },
+                {
+                    path: '/coupons',
+                    name: 'couponList',
+                    component: () => import('@/views/coupons/CouponList.vue')
+                },
+                {
+                    path: '/coupons/:id',
+                    name: 'couponDetail',
+                    component: () => import('@/views/coupons/CouponList.vue')
                 }
             ]
         },

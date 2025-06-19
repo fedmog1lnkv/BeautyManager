@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import StaffRepository from '@/data/repositories/StaffRepository';
+import ServiceRepository from '@/data/repositories/ServiceRepository';
 import MainPhotoWidget from '@/components/dashboard/MainPhotoWidget.vue';
 import router from '@/router';
 import StaffProfile from '@/data/models/StaffProfile';
@@ -15,6 +16,12 @@ const isLoading = ref(true);
 const staff = ref<StaffProfile | null>(null);
 const originalStaff = ref<StaffProfile | null>(null);
 const hasChanges = ref(false);
+
+const services = ref<Service[]>([]);
+
+const goToService = (id: string) => {
+    router.push({ path: `/services/${id}` });
+};
 
 const normalize = (obj: any): any => {
     if (Array.isArray(obj)) return obj.map(normalize);
@@ -47,6 +54,13 @@ const loadStaff = async () => {
     const id = route.params.id as string;
     staff.value = await StaffRepository.getStaffById(id);
     originalStaff.value = JSON.parse(JSON.stringify(staff.value));
+
+    if (staff.value?.services && staff.value.services.length > 0) {
+        services.value = await ServiceRepository.getStaffServices(staff.value.services);
+    } else {
+        services.value = [];
+    }
+
     isLoading.value = false;
 };
 
@@ -121,18 +135,16 @@ const onDeleteClick = async () => {
 onMounted(loadStaff);
 </script>
 <template>
-    <div class="card" style="padding: 0.5rem">
-        <Breadcrumb :home="{ icon: 'pi pi-home', command: () => router.push('/') }" :model="[{ label: 'Сотрудники', command: () => router.push('/staffs') }, { label: originalStaff?.name }]" class="text-sm" />
-    </div>
-
     <div>
-        <div class="grid grid-cols-12 gap-8 mt-6">
-            <div class="col-span-12 xl:col-span-6 flex flex-col h-full">
-                <MainPhotoWidget :title="'Фото сотрудника'" :isLoading="isLoading" :imageUrl="staff?.photo" @upload="uploadPhoto" class="h-full" />
+        <div class="grid grid-cols-12 gap-8 mt-6" style="align-items: stretch">
+            <div class="col-span-12 xl:col-span-6 flex">
+                <div style="width: 100%; height: 100%">
+                    <MainPhotoWidget :title="'Фото сотрудника'" :isLoading="isLoading" :imageUrl="staff?.photo" @upload="uploadPhoto" style="width: 100%; height: 100%; object-fit: contain" />
+                </div>
             </div>
 
-            <div class="col-span-12 xl:col-span-6 flex flex-col">
-                <div class="card flex flex-col gap-4">
+            <div class="col-span-12 xl:col-span-6 flex">
+                <div class="card flex flex-col gap-4" style="width: 100%">
                     <!-- Имя -->
                     <div class="font-semibold text-xl">
                         <Skeleton v-if="isLoading" width="50%" height="1.5rem" />
@@ -162,24 +174,55 @@ onMounted(loadStaff);
                         <Skeleton v-if="isLoading" width="50%" height="1.5rem" />
                         <span v-else>Рейтинг</span>
                     </div>
-
                     <Skeleton v-if="isLoading" width="100%" height="2.5rem" class="mb-2" />
                     <Rating v-else-if="staff" :modelValue="staff.rating / 2" readonly />
 
-                    <!-- Кнопка -->
-                    <Button label="Сохранить" :disabled="!hasChanges" @click="saveStaff" class="w-full" />
-
-                    <Button
-                        :label="deleteButtonText"
-                        icon="pi pi-trash"
-                        severity="danger"
-                        outlined
-                        @click="onDeleteClick"
-                        class="w-full mt-4"
-                        :loading="deleteLoading"
-                    />
+                    <!-- Кнопки -->
+                    <Button label="Сохранить" :disabled="!hasChanges" @click="saveStaff" class="w-full mt-4" />
+                    <Button :label="deleteButtonText" icon="pi pi-trash" severity="danger" outlined @click="onDeleteClick" class="w-full mt-2" :loading="deleteLoading" />
                 </div>
             </div>
+        </div>
+
+        <div class="card mt-6">
+            <div class="font-semibold text-xl mb-3">Услуги сотрудника</div>
+
+            <div v-if="isLoading">
+                <Skeleton width="100%" height="2rem" v-for="n in 3" :key="n" class="mb-2" />
+            </div>
+
+            <div v-else-if="services.length === 0">Услуги не найдены</div>
+
+            <DataTable v-else :value="services" dataKey="id" class="p-datatable-sm" :loading="isLoading" :paginator="false" :rows="services.length" :empty-message="'Услуги не найдены'">
+                <Column header="Название" style="min-width: 20rem">
+                    <template #body="{ data }">
+                        <div class="flex items-center gap-3">
+                            <img :src="data.photo" :alt="data.name" class="rounded object-cover" style="width: 80px; height: 48px" />
+                            <span>{{ data.name }}</span>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column header="Длительность" style="min-width: 10rem">
+                    <template #body="{ data }">{{ data.duration?.substring(0, 5) ?? '—' }}</template>
+                </Column>
+
+                <Column header="Цена (₽)" style="min-width: 10rem">
+                    <template #body="{ data }">{{ data.price ?? '—' }}</template>
+                </Column>
+
+                <Column header="Рейтинг" style="min-width: 8rem">
+                    <template #body="{ data }">
+                        <Rating :modelValue="data.rating / 2" readonly />
+                    </template>
+                </Column>
+
+                <Column style="width: 4rem; text-align: center">
+                    <template #body="{ data }">
+                        <Button icon="pi pi-arrow-up-right" @click="goToService(data.id)" severity="secondary" rounded />
+                    </template>
+                </Column>
+            </DataTable>
         </div>
     </div>
 </template>
